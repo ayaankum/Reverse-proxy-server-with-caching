@@ -1,7 +1,6 @@
 package com.malta.proxy;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class Main {
 
@@ -23,18 +22,28 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        
+        // Fill the arguments from default values
+        for (ARGUMENT arg : ARGUMENT.values()) {
+            ARGUMENTS.put(arg, arg.defaultValue);
+        }
 
-        // fill the arguments from CLI args
-        Arrays.stream(ARGUMENT.values()).forEach(arg -> ARGUMENTS.put(arg, arg.defaultValue));
-        Arrays.stream(args)
-            .filter(arg -> {
-                if (arg.split("=").length < 2) return false;
-                return Stream.of(ARGUMENT.values()).anyMatch(v -> v.name().equals(arg.split("=")[0]));
-            })
-            .forEach(arg -> ARGUMENTS.put(ARGUMENT.valueOf(arg.split("=")[0]), arg.split("=")[1]));
+        // Process CLI args
+        for (String arg : args) {
+            String[] parts = arg.split("=");
+            if (parts.length >= 2) {
+                String argName = parts[0];
+                String argValue = parts[1];
+                // Check if the argument name matches any defined enum
+                for (ARGUMENT v : ARGUMENT.values()) {
+                    if (v.name().equals(argName)) {
+                        ARGUMENTS.put(v, argValue);
+                    }
+                }
+            }
+        }
 
-        // run the pool of handlers
+        // Run the pool of handlers
         new HTTPServer();
     }
-
 }
